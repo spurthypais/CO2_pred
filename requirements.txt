@@ -6,4 +6,5 @@ pandas
 numpy
 netCDF4
 joblib
+scikit-learn
 
