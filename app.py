@@ -31,7 +31,7 @@ if not os.path.exists(cds_path):
     try:
         with open(cds_path, "w") as f:
             f.write(
-                f"url: https://cds.climate.copernicus.eu/api/v2\n"
+                f"url: https://cds.climate.copernicus.eu/api\n"
                 f"key: {st.secrets['CDSAPI_UID']}:{st.secrets['CDSAPI_KEY']}\n"
             )
     except KeyError:
@@ -184,3 +184,4 @@ if selected_date and "last_clicked" in st.session_state:
         st.error(f"⚠️ Could not fetch data or predict: {e}")
 else:
     st.info("👉 Please select both a date and a location")
+
