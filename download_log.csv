@@ -1,0 +1,2 @@
+date,meteo_variables,meteo_file,veg_variables,veg_file,zip_file
+2023-09-02,"10m_u_component_of_wind, 10m_v_component_of_wind, 2m_temperature, surface_pressure, total_precipitation",era5_meteo_20230902.nc,"high_vegetation_cover, leaf_area_index_high_vegetation, leaf_area_index_low_vegetation, low_vegetation_cover",era5_veg_20230902.nc,era5_20230902.zip
