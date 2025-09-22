@@ -1,7 +1,7 @@
 streamlit
 streamlit-folium
 folium
-cdsapi
+cdsapi>=0.5
 pandas
 numpy
 netCDF4
