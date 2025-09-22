@@ -1,13 +1,13 @@
-import streamlit as st
-from datetime import date
-from streamlit_folium import st_folium
-import folium
-import cdsapi
 import os
+import streamlit as st
 import pandas as pd
 import numpy as np
-from netCDF4 import Dataset
+import folium
+from streamlit_folium import st_folium
 import joblib
+from netCDF4 import Dataset
+import cdsapi
+from datetime import date
 
 # ---------------------------
 # Page configuration
@@ -24,9 +24,25 @@ st.markdown(
 )
 
 # ---------------------------
-# Load trained model + target scaler
+# Set up CDS API credentials (Streamlit Cloud)
 # ---------------------------
-MODEL_PATH = "/home/oem/my_project_dir/my_project_env/code/rf_pipeline.pkl"
+cds_path = os.path.expanduser("~/.cdsapirc")
+if not os.path.exists(cds_path):
+    try:
+        with open(cds_path, "w") as f:
+            f.write(
+                f"url: https://cds.climate.copernicus.eu/api/v2\n"
+                f"key: {st.secrets['CDSAPI_UID']}:{st.secrets['CDSAPI_KEY']}\n"
+            )
+    except KeyError:
+        st.error("⚠️ CDS API credentials not set in Streamlit secrets!")
+
+client = cdsapi.Client()
+
+# ---------------------------
+# Load trained model + scaler
+# ---------------------------
+MODEL_PATH = "rf_pipeline.pkl"  # make sure the .pkl file is in repo root
 model, scaler_target = None, None
 
 if os.path.exists(MODEL_PATH):
@@ -58,26 +74,28 @@ VAR_MAP = {
 }
 
 # ---------------------------
-# Download ERA5 function
+# ERA5 download function
 # ---------------------------
 def download_era5(year, month, day, save_path, variables, prefix):
-    client = cdsapi.Client()
-    request = {
-        "product_type": ["reanalysis"],
-        "variable": variables,
-        "year": str(year),
-        "month": f"{month:02d}",
-        "day": f"{day:02d}",
-        "time": ["13:00"],
-        "format": "netcdf"
-    }
     nc_filename = f"{prefix}_{year}-{month:02d}-{day:02d}.nc"
     nc_path = os.path.join(save_path, nc_filename)
-    client.retrieve("reanalysis-era5-single-levels", request).download(nc_path)
+    if not os.path.exists(nc_path):
+        client.retrieve(
+            "reanalysis-era5-single-levels",
+            {
+                "product_type": ["reanalysis"],
+                "variable": variables,
+                "year": str(year),
+                "month": f"{month:02d}",
+                "day": f"{day:02d}",
+                "time": ["13:00"],
+                "format": "netcdf"
+            }
+        ).download(nc_path)
     return nc_path
 
 # ---------------------------
-# Extract nearest values function
+# Extract nearest values
 # ---------------------------
 def extract_nearest_values(nc_path, lat, lon, requested_vars):
     values = {}
@@ -129,7 +147,7 @@ with col2:
 # Prediction logic
 # ---------------------------
 if selected_date and "last_clicked" in st.session_state:
-    save_dir = "/home/oem/Downloads/xx"
+    save_dir = "era5_data"
     os.makedirs(save_dir, exist_ok=True)
     lat, lon = st.session_state["last_clicked"]
 
