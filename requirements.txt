@@ -1,6 +1,5 @@
 streamlit
 streamlit-folium
-sklearn
 folium
 cdsapi
 pandas
